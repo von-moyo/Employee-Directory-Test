@@ -39,15 +39,9 @@ export default function RootLayout() {
       >
         <Stack.Screen
           name="index"
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           options={{
             title: 'Employee Directory',
-            headerLargeTitle: true,
-            headerLargeTitleStyle: {
-              color: colors.text,
-            },
-            headerStatusBarHeight: 56,
-          } as any}
+          }}
         />
         <Stack.Screen
           name="employee/[id]"
