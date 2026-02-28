@@ -24,6 +24,8 @@ A production-quality React Native mobile application built with **Expo** and **T
 | Offline Cache | React Query Persist + AsyncStorage |
 | Testing | Jest v29 + React Native Testing Library |
 | Animations | React Native `Animated` API |
+| Haptic Feedback | [expo-haptics](https://docs.expo.dev/versions/latest/sdk/haptics/) |
+| Icons | [@expo/vector-icons](https://icons.expo.fyi) (Ionicons) |
 | Dark Mode | System-based via `useColorScheme` |
 
 ---
@@ -39,8 +41,13 @@ A production-quality React Native mobile application built with **Expo** and **T
 ### Bonus
 - **Offline Caching** — React Query data persisted to AsyncStorage (24-hour TTL)
 - **Dark Mode** — Automatic system-based theme with full color token support
-- **Animations** — Fade-in list items (staggered), scale press feedback, slide-up details
-- **Unit Tests** — 24 tests across components, hooks, and utility functions
+- **Animations** — Staggered slide-up list items, spring detail entrance, page transitions
+- **Haptic Feedback** — Light tactile response on card press
+- **Tappable Contacts** — Email and phone open native `mailto:` / `tel:` handlers
+- **Image Fallback** — Initials avatar when profile image fails to load
+- **Skeleton Loaders** — Shimmer loading states for both list and detail screens
+- **Error Boundary** — App-level crash protection with recovery UI
+- **Unit Tests** — 86 tests across components, hooks, and utility functions
 
 ---
 
@@ -61,12 +68,14 @@ employee-directory/
 │   │   └── index.ts
 │   │
 │   ├── components/
-│   │   ├── EmployeeCard.tsx    # List card with fade-in animation
-│   │   ├── SearchBar.tsx       # Search input with animated clear button
-│   │   ├── LoadingState.tsx    # Animated skeleton loader
+│   │   ├── EmployeeCard.tsx    # List card with slide-up animation + haptics
+│   │   ├── SearchBar.tsx       # Search input with Ionicons + clear button
+│   │   ├── LoadingState.tsx    # Animated skeleton loader (list)
+│   │   ├── DetailSkeleton.tsx  # Animated skeleton loader (detail screen)
 │   │   ├── ErrorState.tsx      # Error display with retry button
+│   │   ├── ErrorBoundary.tsx   # App-level error boundary
 │   │   ├── EmptyState.tsx      # Empty search results display
-│   │   ├── DetailRow.tsx       # Reusable detail info row
+│   │   ├── DetailRow.tsx       # Reusable detail row (supports onPress)
 │   │   └── index.ts
 │   │
 │   ├── hooks/
@@ -95,9 +104,11 @@ employee-directory/
 ├── __tests__/
 │   ├── components/
 │   │   ├── EmployeeCard.test.tsx
-│   │   └── SearchBar.test.tsx
+│   │   ├── SearchBar.test.tsx
+│   │   └── Pagination.test.tsx
 │   ├── hooks/
-│   │   └── useEmployees.test.ts
+│   │   ├── useEmployees.test.ts
+│   │   └── usePagination.test.ts
 │   └── utils/
 │       └── formatters.test.ts
 │
@@ -133,7 +144,7 @@ The `useTheme()` hook reads `useColorScheme()` and returns the appropriate color
 
 ### 6. FlatList Optimization
 - `removeClippedSubviews` on Android
-- `initialNumToRender={12}`, `maxToRenderPerBatch={10}`, `windowSize={10}`
+- `initialNumToRender={20}`, `maxToRenderPerBatch={20}`, `windowSize={5}`
 - `getItemLayout` for fixed card heights (eliminates layout measurement overhead)
 - `useCallback` for `renderItem` and `keyExtractor`
 
@@ -196,8 +207,10 @@ npm run test:coverage
 | `formatters.test.ts` | 10 tests — string formatting + filtering |
 | `EmployeeCard.test.tsx` | 5 tests — render, press, accessibility |
 | `SearchBar.test.tsx` | 6 tests — input, clear button, callbacks |
+| `Pagination.test.tsx` | 56 tests — page navigation, window, accessibility |
 | `useEmployees.test.ts` | 3 tests — loading, success, error states |
-| **Total** | **24 tests** |
+| `usePagination.test.ts` | 6 tests — pagination logic, edge cases |
+| **Total** | **86 tests** |
 
 ---
 
