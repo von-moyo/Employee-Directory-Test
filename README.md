@@ -2,6 +2,8 @@
 
 A production-quality React Native mobile application built with **Expo** and **TypeScript**. Browse, search, and explore employee profiles with a clean, modern UI that adapts to light and dark mode.
 
+**[Demo Walkthrough (Loom)](https://www.loom.com/share/fc76fc392ad548c1862dc168b2c28525)**
+
 ---
 
 ## Screenshots
