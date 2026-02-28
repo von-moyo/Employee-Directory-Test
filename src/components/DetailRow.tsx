@@ -1,30 +1,50 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTheme, spacing, borderRadius } from '@/theme';
 
 interface DetailRowProps {
   icon: string;
   label: string;
   value: string;
+  onPress?: () => void;
 }
 
-export function DetailRow({ icon, label, value }: DetailRowProps) {
+export function DetailRow({ icon, label, value, onPress }: DetailRowProps) {
   const { colors, typography } = useTheme();
   const styles = makeStyles(colors);
 
-  return (
-    <View style={styles.container}>
+  const content = (
+    <>
       <View style={styles.iconContainer}>
         <Text style={styles.icon}>{icon}</Text>
       </View>
       <View style={styles.content}>
         <Text style={[typography.labelSmall, styles.label]}>{label}</Text>
-        <Text style={[typography.bodyMedium, styles.value]} numberOfLines={2}>
+        <Text
+          style={[typography.bodyMedium, styles.value, onPress && { color: colors.primary }]}
+          numberOfLines={2}
+        >
           {value}
         </Text>
       </View>
-    </View>
+    </>
   );
+
+  if (onPress) {
+    return (
+      <TouchableOpacity
+        style={styles.container}
+        onPress={onPress}
+        activeOpacity={0.6}
+        accessibilityRole="link"
+        accessibilityLabel={`${label}: ${value}`}
+      >
+        {content}
+      </TouchableOpacity>
+    );
+  }
+
+  return <View style={styles.container}>{content}</View>;
 }
 
 function makeStyles(colors: ReturnType<typeof useTheme>['colors']) {

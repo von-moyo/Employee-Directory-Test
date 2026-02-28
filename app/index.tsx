@@ -23,6 +23,8 @@ import { filterEmployeesByName } from '@/utils';
 import type { Employee } from '@/types';
 
 const PAGE_SIZE = 20;
+// Card height (paddingVertical 10*2 + avatar 46 + border 2) + wrapper marginBottom 8
+const ITEM_HEIGHT = 76;
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -92,6 +94,15 @@ export default function HomeScreen() {
 
   const keyExtractor = useCallback((item: Employee) => item.id.toString(), []);
 
+  const getItemLayout = useCallback(
+    (_: unknown, index: number) => ({
+      length: ITEM_HEIGHT,
+      offset: ITEM_HEIGHT * index,
+      index,
+    }),
+    [],
+  );
+
   const styles = makeStyles(colors);
 
   if (isLoading) {
@@ -134,6 +145,7 @@ export default function HomeScreen() {
           data={paginatedItems}
           keyExtractor={keyExtractor}
           renderItem={renderItem}
+          getItemLayout={getItemLayout}
           ListEmptyComponent={<EmptyState searchQuery={searchQuery} />}
           refreshControl={
             <RefreshControl

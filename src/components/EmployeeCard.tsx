@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -7,8 +7,9 @@ import {
   StyleSheet,
   Animated,
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { useTheme, spacing } from '@/theme';
-import { getFullName } from '@/utils';
+import { getFullName, getInitials } from '@/utils';
 import type { Employee } from '@/types';
 
 const ACCENT = '#004282';
@@ -21,31 +22,46 @@ interface EmployeeCardProps {
 
 export function EmployeeCard({ employee, onPress, index = 0 }: EmployeeCardProps) {
   const { colors } = useTheme();
+  const [imageError, setImageError] = useState(false);
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(20)).current;
 
   React.useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 320,
-      delay: index * 50,
-      useNativeDriver: true,
-    }).start();
-  }, [fadeAnim, index]);
+    const delay = index * 80;
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 400,
+        delay,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 400,
+        delay,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [fadeAnim, slideAnim, index]);
 
   const handlePressIn = () => {
-    Animated.spring(scaleAnim, { toValue: 0.975, useNativeDriver: true, speed: 50 }).start();
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Animated.spring(scaleAnim, { toValue: 0.96, useNativeDriver: true, speed: 40 }).start();
   };
 
   const handlePressOut = () => {
-    Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, speed: 50 }).start();
+    Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, speed: 40 }).start();
   };
 
   return (
     <Animated.View
       style={[
         styles.wrapper,
-        { opacity: fadeAnim, transform: [{ scale: scaleAnim }] },
+        {
+          opacity: fadeAnim,
+          transform: [{ translateY: slideAnim }, { scale: scaleAnim }],
+        },
       ]}
     >
       <TouchableOpacity
@@ -60,12 +76,19 @@ export function EmployeeCard({ employee, onPress, index = 0 }: EmployeeCardProps
         {/* Left accent stripe */}
         <View style={styles.stripe} />
 
-        {/* Square avatar */}
-        <Image
-          source={{ uri: employee.image }}
-          style={[styles.avatar, { backgroundColor: colors.surfaceSecondary }]}
-          resizeMode="cover"
-        />
+        {/* Square avatar with initials fallback */}
+        {imageError ? (
+          <View style={[styles.avatar, styles.avatarFallback]}>
+            <Text style={styles.avatarInitials}>{getInitials(employee)}</Text>
+          </View>
+        ) : (
+          <Image
+            source={{ uri: employee.image }}
+            style={[styles.avatar, { backgroundColor: colors.surfaceSecondary }]}
+            resizeMode="cover"
+            onError={() => setImageError(true)}
+          />
+        )}
 
         {/* Info */}
         <View style={styles.info}>
@@ -103,12 +126,23 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
     backgroundColor: ACCENT,
     marginRight: spacing[3],
+    marginVertical: -10,
   },
   avatar: {
     width: 46,
     height: 46,
     borderRadius: 6,
     marginRight: spacing[3],
+  },
+  avatarFallback: {
+    backgroundColor: ACCENT,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarInitials: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
   },
   info: {
     flex: 1,

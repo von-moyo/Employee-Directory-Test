@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'react-native';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { queryClient, asyncStoragePersister } from '@/store/queryClient';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { lightColors, darkColors } from '@/theme';
 
 export default function RootLayout() {
@@ -12,6 +13,7 @@ export default function RootLayout() {
   const colors = isDark ? darkColors : lightColors;
 
   return (
+    <ErrorBoundary>
     <PersistQueryClientProvider
       client={queryClient}
       persistOptions={{
@@ -32,6 +34,7 @@ export default function RootLayout() {
             fontSize: 17,
           },
           headerShadowVisible: false,
+          animation: 'slide_from_right',
           contentStyle: {
             backgroundColor: colors.background,
           },
@@ -52,5 +55,6 @@ export default function RootLayout() {
         />
       </Stack>
     </PersistQueryClientProvider>
+    </ErrorBoundary>
   );
 }

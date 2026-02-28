@@ -1,17 +1,17 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
   Image,
   StyleSheet,
   Animated,
-  ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { useEmployee } from '@/hooks';
-import { ErrorState, DetailRow } from '@/components';
+import { ErrorState, DetailRow, DetailSkeleton } from '@/components';
 import { useTheme, spacing, borderRadius } from '@/theme';
-import { getFullName } from '@/utils';
+import { getFullName, getInitials } from '@/utils';
 
 const HERO_COLOR = '#004282';
 
@@ -20,30 +20,34 @@ export default function EmployeeDetailScreen() {
   const navigation = useNavigation();
   const { colors, typography } = useTheme();
 
+  const [imageError, setImageError] = useState(false);
   const employeeId = parseInt(id ?? '0', 10);
   const { data: employee, isLoading, isError, error, refetch } = useEmployee(employeeId);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(24)).current;
+  const slideAnim = useRef(new Animated.Value(40)).current;
+  const sectionFade = useRef(new Animated.Value(0)).current;
+  const sectionSlide = useRef(new Animated.Value(30)).current;
 
   useEffect(() => {
     if (employee) {
       navigation.setOptions({ title: getFullName(employee) });
+      // Hero animates in first, sections follow with a stagger
       Animated.parallel([
-        Animated.timing(fadeAnim, { toValue: 1, duration: 380, useNativeDriver: true }),
-        Animated.timing(slideAnim, { toValue: 0, duration: 380, useNativeDriver: true }),
+        Animated.timing(fadeAnim, { toValue: 1, duration: 450, useNativeDriver: true }),
+        Animated.spring(slideAnim, { toValue: 0, useNativeDriver: true, speed: 14, bounciness: 4 }),
+      ]).start();
+      Animated.parallel([
+        Animated.timing(sectionFade, { toValue: 1, duration: 400, delay: 200, useNativeDriver: true }),
+        Animated.timing(sectionSlide, { toValue: 0, duration: 400, delay: 200, useNativeDriver: true }),
       ]).start();
     }
-  }, [employee, navigation, fadeAnim, slideAnim]);
+  }, [employee, navigation, fadeAnim, slideAnim, sectionFade, sectionSlide]);
 
   const styles = makeStyles(colors);
 
   if (isLoading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color={HERO_COLOR} />
-      </View>
-    );
+    return <DetailSkeleton />;
   }
 
   if (isError || !employee) {
@@ -67,11 +71,18 @@ export default function EmployeeDetailScreen() {
       <Animated.View
         style={[styles.hero, { transform: [{ translateY: slideAnim }] }]}
       >
-        <Image
-          source={{ uri: employee.image }}
-          style={styles.avatar}
-          resizeMode="cover"
-        />
+        {imageError ? (
+          <View style={[styles.avatar, styles.avatarFallback]}>
+            <Text style={styles.avatarInitials}>{getInitials(employee)}</Text>
+          </View>
+        ) : (
+          <Image
+            source={{ uri: employee.image }}
+            style={styles.avatar}
+            resizeMode="cover"
+            onError={() => setImageError(true)}
+          />
+        )}
         <Text style={[typography.headingLarge, styles.name]}>
           {getFullName(employee)}
         </Text>
@@ -87,12 +98,25 @@ export default function EmployeeDetailScreen() {
 
       {/* ── Sections ── */}
       <Animated.View
-        style={[styles.sections, { transform: [{ translateY: slideAnim }] }]}
+        style={[
+          styles.sections,
+          { opacity: sectionFade, transform: [{ translateY: sectionSlide }] },
+        ]}
       >
         <Text style={[typography.labelLarge, styles.sectionTitle]}>Contact</Text>
         <View style={[styles.card, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
-          <DetailRow icon="✉️" label="Email" value={employee.email} />
-          <DetailRow icon="📞" label="Phone" value={employee.phone} />
+          <DetailRow
+            icon="✉️"
+            label="Email"
+            value={employee.email}
+            onPress={() => Linking.openURL(`mailto:${employee.email}`)}
+          />
+          <DetailRow
+            icon="📞"
+            label="Phone"
+            value={employee.phone}
+            onPress={() => Linking.openURL(`tel:${employee.phone}`)}
+          />
         </View>
 
         <Text style={[typography.labelLarge, styles.sectionTitle]}>Work</Text>
@@ -124,12 +148,6 @@ export default function EmployeeDetailScreen() {
 
 function makeStyles(colors: ReturnType<typeof useTheme>['colors']) {
   return StyleSheet.create({
-    center: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: colors.background,
-    },
     container: {
       flex: 1,
       backgroundColor: colors.background,
@@ -153,6 +171,16 @@ function makeStyles(colors: ReturnType<typeof useTheme>['colors']) {
       borderWidth: 3,
       borderColor: 'rgba(255,255,255,0.9)',
       marginBottom: spacing[2],
+    },
+    avatarFallback: {
+      backgroundColor: 'rgba(255,255,255,0.2)',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    avatarInitials: {
+      color: '#FFFFFF',
+      fontSize: 32,
+      fontWeight: '700',
     },
     name: {
       color: '#FFFFFF',

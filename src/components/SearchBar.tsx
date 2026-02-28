@@ -7,6 +7,7 @@ import {
   Animated,
   Text,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme, spacing, fontSize } from '@/theme';
 
 interface SearchBarProps {
@@ -38,7 +39,7 @@ export function SearchBar({
         { backgroundColor: colors.cardBackground, borderColor: colors.border },
       ]}
     >
-      <Text style={[styles.searchIcon, { color: colors.textTertiary }]}>⌕</Text>
+      <Ionicons name="search" size={18} color={colors.textTertiary} style={styles.searchIcon} />
       <TextInput
         style={[styles.input, { color: colors.text }]}
         value={value}
@@ -80,9 +81,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing[2],
   },
   searchIcon: {
-    fontSize: 18,
     marginRight: spacing[2],
-    lineHeight: 22,
   },
   input: {
     flex: 1,
