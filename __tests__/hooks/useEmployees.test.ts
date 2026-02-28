@@ -10,8 +10,10 @@ const mockedGetAll = employeesApi.getAll as jest.MockedFunction<
   typeof employeesApi.getAll
 >;
 
+let queryClient: QueryClient;
+
 function createWrapper() {
-  const queryClient = new QueryClient({
+  queryClient = new QueryClient({
     defaultOptions: {
       queries: { retry: false, gcTime: 0 },
     },
@@ -23,6 +25,11 @@ function createWrapper() {
 describe('useEmployees', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    queryClient.cancelQueries();
+    queryClient.clear();
   });
 
   it('returns loading state initially', () => {

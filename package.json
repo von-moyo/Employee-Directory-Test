@@ -7,9 +7,9 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "test": "jest --watchAll=false",
-    "test:watch": "jest --watchAll",
-    "test:coverage": "jest --coverage",
+    "test": "NODE_OPTIONS=--no-deprecation jest --watchAll=false",
+    "test:watch": "NODE_OPTIONS=--no-deprecation jest --watchAll",
+    "test:coverage": "NODE_OPTIONS=--no-deprecation jest --coverage",
     "type-check": "tsc --noEmit"
   },
   "jest": {

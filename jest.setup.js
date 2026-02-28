@@ -1,3 +1,6 @@
+// Use fake timers to prevent Animated API from leaking open handles
+jest.useFakeTimers();
+
 // Mock Expo Router for tests
 jest.mock('expo-router', () => ({
   useRouter: () => ({
